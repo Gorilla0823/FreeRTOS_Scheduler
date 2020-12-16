@@ -17,6 +17,10 @@
 #include "shell.h"
 #include "host.h"
 
+/* private macros */
+#define Config_log 1
+#define Task_delay 100
+#define TASK_AMOUNT 4
 /* _sromfs symbol can be found in main.ld linker script
  * it contains file system structure of test_romfs directory
  */
@@ -85,15 +89,26 @@ char recv_byte()
 	while(!xQueueReceive(serial_rx_queue, &msg, portMAX_DELAY));
 	return msg;
 }
+
+void FCFS(){
+	signed char *pcTaskName = pcTaskGetTaskName( NULL );
+	signed char buf[128];
+	taskENTER_CRITICAL();
+	fio_printf(1,"\r%s is running\n",pcTaskName);
+	fio_printf(1,"\r%s\n",buf);
+	taskEXIT_CRITICAL();
+	fio_printf(1,"\r%s is ending\n",pcTaskName);
+	taskENTER_CRITICAL();
+	return;
+}
 void command_prompt(void *pvParameters)
-{
+{	
 	char buf[128];
 	char *argv[20];
-        char hint[] = USER_NAME "@" USER_NAME "-STM32:~$ ";
-
-	//fio_printf(1, "\rWelcome to FreeRTOS Shell\r\n");
+    char hint[] = USER_NAME "@" USER_NAME "-STM32:~$ ";
 	while(1){
-                fio_printf(1, "\r%s", hint);
+		FCFS();
+		fio_printf(1, "\r%s\n", hint);
 		fio_read(0, buf, 127);
 	
 		int n=parse_command(buf, argv);
@@ -131,7 +146,7 @@ void system_logger(void *pvParameters)
             return;
         }
         vTaskList(buf);
-
+		
         memcpy(output, (char *)(buf + 2), strlen((char *)buf) - 2);
 
         error = host_action(SYS_WRITE, handle, (void *)buf, strlen((char *)buf));
@@ -145,11 +160,12 @@ void system_logger(void *pvParameters)
     }
     
     host_action(SYS_CLOSE, handle);
+	
 }
 
 int main()
 {
-	const int TASK_AMOUNT = 4;
+	
 	char *s[]={"test1","test2","test3","test4"};
 	init_rs232();
 	enable_rs232_interrupts();
@@ -162,30 +178,36 @@ int main()
 	
 	/* Create the queue used by the serial task.  Messages for write to
 	 * the RS232. */
+	
+	
+	
+	
 	vSemaphoreCreateBinary(serial_tx_wait_sem);
+	
 	/* Add for serial input 
 	 * Reference: www.freertos.org/a00116.html */
-	serial_rx_queue = xQueueCreate(4, sizeof(char));
+	serial_rx_queue = xQueueCreate(1, sizeof(char));
 
 	/* Create tasks to output text read from romfs. */
 	for(int i = 0 ;i < TASK_AMOUNT ; i++){
+	
 	xTaskCreate(command_prompt,
 	            (signed portCHAR *) s[i],
-	            512 /* stack size */, NULL, tskIDLE_PRIORITY + i + 1, NULL);
+	            512 /* stack size */, NULL, tskIDLE_PRIORITY , NULL);
 	}
-		
+	
 
-
-#if 0
+#if Config_log
 	/* Create a task to record system log. */
 	xTaskCreate(system_logger,
 	            (signed portCHAR *) "Logger",
-	            1024 /* stack size */, NULL, tskIDLE_PRIORITY + 1, NULL);
+	            1024 /* stack size */, NULL, tskIDLE_PRIORITY , NULL);
 #endif
 
 	/* Start running the tasks. */
 	vTaskStartScheduler();
-	vTaskEndScheduler();
+	//vTaskEndScheduler();
+	for(;;);
 	return 0;
 }
 

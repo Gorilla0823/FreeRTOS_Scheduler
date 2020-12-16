@@ -72,7 +72,7 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configUSE_PREEMPTION		1
+#define configUSE_PREEMPTION		0
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			1
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 72000000 )	
@@ -85,7 +85,7 @@
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		1
 #define configUSE_MUTEXES			1
-
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 		0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
@@ -96,11 +96,11 @@ to exclude the API function. */
 #define INCLUDE_vTaskPrioritySet		1
 #define INCLUDE_uxTaskPriorityGet		1
 #define INCLUDE_vTaskDelete				1
-#define INCLUDE_vTaskCleanUpResources	0
+#define INCLUDE_vTaskCleanUpResources	1
 #define INCLUDE_vTaskSuspend			1
 #define INCLUDE_vTaskDelayUntil			1
 #define INCLUDE_vTaskDelay				1
-
+#define INCLUDE_pcTaskGetTaskName       1
 /* This is the raw value as per the Cortex-M3 NVIC.  Values can be 255
 (lowest) to 0 (1?) (highest). */
 #define configKERNEL_INTERRUPT_PRIORITY 		127 //Needs to be below 240 (0xf0) to work with QEMU, since this is the priority mask used
