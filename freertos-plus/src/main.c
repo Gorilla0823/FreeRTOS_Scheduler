@@ -141,46 +141,48 @@ void loggerv2(){
 }
 void Task_D(){
 	for(;;){
-		//vTaskSuspend(C_Task_Handler);
+		vTaskSuspend(C_Task_Handler);
 		signed char buf[512];
 		fio_printf(1,"Task_D:\r\n");
 		loggerv2();
 		vTaskList(buf);
 		fio_printf(1,"%s",buf);
 		command_prompt();
-		//vTaskResume(A_Task_Handler);
+		vTaskDelete(D_Task_Handler);
 	}
 }
 void Task_C(){
 	for(;;){
-		//vTaskSuspend(B_Task_Handler);
+		vTaskSuspend(B_Task_Handler);
 		signed char buf[512];
 		fio_printf(1,"\n\rTask_C:\r\n");
 		loggerv2();
 		vTaskList(buf);
 		fio_printf(1,"%s",buf);
 		command_prompt();
-		//vTaskResume(D_Task_Handler);
+		vTaskResume(D_Task_Handler);
 		vTaskDelay(50);
+		vTaskDelete(C_Task_Handler);
 	}
 }
 void Task_B(){
 	for(;;){
-		//vTaskSuspend(A_Task_Handler);
+		vTaskSuspend(A_Task_Handler);
 		signed char buf[512];
 		fio_printf(1,"\n\rTask_B:\r\n");
 		loggerv2();
 		vTaskList(buf);	
 		fio_printf(1,"%s",buf);
 		command_prompt();
-		//vTaskResume(C_Task_Handler);
+		vTaskResume(C_Task_Handler);
 		vTaskDelay(500);
+		vTaskDelete(B_Task_Handler);
 	}
 }
 void Task_A(){
 	for(;;){
-		//vTaskSuspend(C_Task_Handler);
-		//vTaskSuspend(D_Task_Handler);
+		vTaskSuspend(C_Task_Handler);
+		vTaskSuspend(D_Task_Handler);
 		//fio_printf(1,"A is running\n\r");
 		signed char buf[512];
 		fio_printf(1,"\r\nTask_A:\r\n");
@@ -190,6 +192,7 @@ void Task_A(){
 		command_prompt();
 		vTaskResume(B_Task_Handler);
 		vTaskDelay(500);
+		vTaskDelete(A_Task_Handler);
 	}
 }
 /*void FCFS(){
